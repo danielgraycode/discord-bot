@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Commands.Permissions.Levels;
+using Discord.Modules;
+
 
 //Copyright Daniel Gray 2016
 //Please refer to the licence included for more info
@@ -76,11 +79,57 @@ namespace Discord_Bot
                         {
                             await e.Channel.SendMessage("https://images.duckduckgo.com/iu/?u=http%3A%2F%2Fi0.kym-cdn.com%2Fphotos%2Fimages%2Fnewsfeed%2F000%2F875%2F516%2Fde9.jpg&f=1");
                         }
-
+                        else if (memetoshow == 6)
+                        {
+                            await e.Channel.SendMessage("https://i.imgur.com/yJzXHod.jpg");
+                        }
+                        else if (memetoshow == 7)
+                        {
+                            await e.Channel.SendMessage("https://images.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.latintimes.com%2Fsites%2Flatintimes.com%2Ffiles%2Fstyles%2Fpulse_embed%2Fpublic%2F2015%2F03%2F03%2Fhillary-clinton-email-memes_1.jpg&f=1");
+                        }
+ 
                     });
+           
+                commands.CreateCommand("kick")                                  
+                    .Description("Kick the specified user")                
+                    .Parameter("user", ParameterType.Unparsed)
+                    .MinPermissions((int)AccessLevel.ServerAdmin)
+                    .Do(async (e) =>    
+                        {            
+                        ulong id;                                         
+                        User u = null;                                  
+                        string findUser = e.Args[0];                      
+                        if (!string.IsNullOrWhiteSpace(findUser))           
+                        {
+                            if (e.Message.MentionedUsers.Count() == 1)      
+                                u = e.Message.MentionedUsers.FirstOrDefault();
+                            else if (e.Server.FindUsers(findUser).Any())    
+                                u = e.Server.FindUsers(findUser).FirstOrDefault();
+                            else if (ulong.TryParse(findUser, out id))      
+                                u = e.Server.GetUser(id);
+                        }
+
+                        if (u == null)                                 
+                        {
+                        await e.Channel.SendMessage("Eh? I can't find that person...");
+                        }
+                        await e.Channel.SendMessage("cya {u.Mention} :wave:");
+                        await u.Kick();
+                    });
+  
+        
+
+            discord.UserLeft += async (s, e) =>
+                {
+                    var logchannel = e.Server.FindChannels("logs").FirstOrDefault();
+                    await logchannel.SendMessage(e.User.Mention + " has joined the server");
+                    Console.WriteLine("[" + e.Server.Name + "] " + e.User.Name + "#" + e.User.Discriminator + " Has left the server");
+                };
 
             discord.UserJoined += async (s, e) =>
                  {
+                     var logchannel = e.Server.FindChannels("logs").FirstOrDefault();
+                     await logchannel.SendMessage(e.User.Mention + " has joined the server");
                      Console.WriteLine("[" + e.Server.Name + "] " + e.User.Name + "#" + e.User.Discriminator + " Has joined the server");
                      await e.Server.DefaultChannel.SendMessage("Please welcome " + e.User.Mention + " to the server! Make sure you obey the rules and enjoy!");
                  };
